@@ -1,6 +1,6 @@
 # README.md – High-Performance Order Flow Imbalance (OFI) Research Pipeline
 
-This repository contains a complete, highly optimized Go implementation for downloading, processing, and backtesting order-flow-based alpha signals on Binance Futures perpetual aggregate trade data (BTCUSDT).
+This repository contains a complete, highly optimized Go implementation for downloading, processing, and backtesting order-flow-based alpha signals on Binance Futures perpetual aggregate trade data (**BTCUSDT** and **ETHUSDT**).
 
 The pipeline is specifically engineered for a Ryzen 9 7900X (24 logical cores) and achieves near-theoretical throughput on multi-day historical datasets.
 
@@ -9,13 +9,15 @@ The pipeline is specifically engineered for a Ryzen 9 7900X (24 logical cores) a
 ```
 .
 ├── data/
-│   └── BTCUSDT/
+│   ├── BTCUSDT/
+│   └── ETHUSDT/
 │       └── YYYY/
 │           └── MM/
 │               ├── data.quantdev      # zlib-compressed daily aggTrades (AGG3 format)
 │               └── index.quantdev     # compact daily index (offset/len/checksum)
 ├── features/
-│   └── BTCUSDT/
+│   ├── BTCUSDT/
+│   └── ETHUSDT/
 │       └── <VariantID>/
 │           └── YYYYMMDD.bin       # raw float64 signal series (one file per day)
 ├── common.go          # shared constants, zero-allocation trade parsing
@@ -31,6 +33,7 @@ The pipeline is specifically engineered for a Ryzen 9 7900X (24 logical cores) a
 ## Features & Design Principles
 
 - Zero-allocation CSV to binary conversion with custom fast parsers
+- **Enhanced Precision**: Custom AGG3 format handles up to 8 decimal places for precise ETH/SOL tracking.
 - Custom compact binary format (AGG3) with per-day zlib compression and SHA-256 checksums
 - Monthly index files enabling O(1) random access to any day without full decompression
 - Fully parallelized across 24 threads (download, build, study)
@@ -45,7 +48,7 @@ The pipeline is specifically engineered for a Ryzen 9 7900X (24 logical cores) a
 ## Prerequisites
 
 - Go 1.22 or later
-- Approximately 300–400 GB of free disk space for full BTCUSDT history (2020–present)
+- Approximately 500–600 GB of free disk space for full BTC+ETH history (2020–present)
 - Recommended: AMD Ryzen 9 7900X / 7950X or any CPU with ≥24 logical threads
 
 ## Build
@@ -71,7 +74,7 @@ Available commands:
 | Command   | Description                                                                 |
 |----------|-----------------------------------------------------------------------------|
 | data     | Download and convert all available Binance aggTrade daily ZIPs → AGG3 format |
-| build    | Generate signal features for all model variants (creates `features/BTCUSDT/`) |
+| build    | Generate signal features for all model variants (creates `features/`)        |
 | study    | Run full IS/OOS performance study (OOS starts 2024-01-01)                     |
 | sanity   | Verify integrity of all downloaded and converted data                       |
 
@@ -102,7 +105,7 @@ All model parameters are defined in `ofibuild.go` inside `BuildVariants`. You ma
 
 ## Performance Notes
 
-- `data` command processes ~6–8 years of BTCUSDT in ≈2–3 hours on a 7900X with fast SSD
+- `data` command processes years of BTC/ETH in ≈2–3 hours on a 7900X with fast SSD
 - `build` typically completes in under 30 minutes
 - `study` finishes in ~5–10 minutes
 - Memory usage stays below 4 GB even on highest-volume days
